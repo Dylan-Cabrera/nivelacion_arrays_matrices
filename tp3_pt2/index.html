@@ -118,6 +118,7 @@
             <tbody id="tabla-body">
             </tbody>
         </table>
+        <div id="promedio-container" style="display: none; margin-top: 15px; font-weight: bold; font-size: 16px; color: #333; text-align: right;"></div>
     </div>
 
     <script>
@@ -134,10 +135,12 @@
 
                 // Limpiar la tabla actual
                 tablaBody.innerHTML = '';
+                const promedioContainer = document.getElementById('promedio-container');
 
                 // Si hay alumnos insertarlos a la tabla
                 if (alumnos.length > 0) {
                     tabla.style.display = 'table';
+                    let sumaNotas = 0;
                     alumnos.forEach(alumno => {
                         const tr = document.createElement('tr');
                         tr.innerHTML = `
@@ -146,9 +149,15 @@
                             <td>${alumno.nota}</td>
                         `;
                         tablaBody.appendChild(tr);
+                        sumaNotas += parseFloat(alumno.nota) || 0;
                     });
+                    
+                    const promedio = sumaNotas / alumnos.length;
+                    promedioContainer.innerHTML = `Promedio de notas: ${promedio.toFixed(2)}`;
+                    promedioContainer.style.display = 'block';
                 } else {
                     tabla.style.display = 'none'; // Si no hay registros, ocultar tabla
+                    if (promedioContainer) promedioContainer.style.display = 'none';
                 }
             } catch (error) {
                 console.error("Error al cargar la lista:", error);
