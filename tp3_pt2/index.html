@@ -121,14 +121,76 @@
     </div>
 
     <script>
-        function mostrarLista() {
-            // Esta función simula la carga de datos. 
-            // En un proyecto real, aquí harías un 'fetch' a tu backend.
-            const tabla = document.getElementById('lista-alumnos');
-            tabla.style.display = 'table';
-            console.log("Cargando lista de alumnos...");
+        const form = document.querySelector('form');
+        const tabla = document.getElementById('lista-alumnos');
+        const tablaBody = document.getElementById('tabla-body');
+
+        // Función para cargar y mostrar los alumnos en la tabla automáticamente
+        async function cargarLista() {
+            try {
+                // Hacer petición GET al nuevo endpoint
+                const response = await fetch('/alumnos');
+                const alumnos = await response.json();
+
+                // Limpiar la tabla actual
+                tablaBody.innerHTML = '';
+
+                // Si hay alumnos insertarlos a la tabla
+                if (alumnos.length > 0) {
+                    tabla.style.display = 'table';
+                    alumnos.forEach(alumno => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${alumno.nombre}</td>
+                            <td>${alumno.edad}</td>
+                            <td>${alumno.nota}</td>
+                        `;
+                        tablaBody.appendChild(tr);
+                    });
+                } else {
+                    tabla.style.display = 'none'; // Si no hay registros, ocultar tabla
+                }
+            } catch (error) {
+                console.error("Error al cargar la lista:", error);
+            }
         }
+
+        // Interceptar el envío del formulario para que no recargue la página
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+            const data = new URLSearchParams();
+            for (const pair of formData) {
+                data.append(pair[0], pair[1]);
+            }
+
+            try {
+                const response = await fetch('/enviar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: data
+                });
+
+                if (response.ok) {
+                    form.reset();         // Vaciamos los campos de texto
+                    cargarLista();        // Muestra la tabla actualizada con el nuevo alumno al instante
+                }
+            } catch (error) {
+                console.error("Error al guardar alumno:", error);
+            }
+        });
+
+        // Ocultar botón que servía para traer lista manualmente (ya que se hace automático)
+        const btnList = document.querySelector('.btn-list');
+        if (btnList) {
+            btnList.style.display = 'none';
+        }
+
+        // Cargamos la lista automáticamente cuando ingresamos a la página
+        document.addEventListener('DOMContentLoaded', cargarLista);
     </script>
+
 
 </body>
 
